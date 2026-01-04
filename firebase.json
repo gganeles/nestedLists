@@ -1,0 +1,18 @@
+{
+    "hosting": {
+        "public": ".output/public",
+        "ignore": [
+            "firebase.json",
+            "**/.github",
+            "**/.gitignore",
+            "**/.env",
+            "**/.firebaserc",
+            "**/.vscode",
+            "**/.vinxi",
+            "**/node_modules/**"
+        ]
+    },
+    "database": {
+        "rules": "database.rules.json"
+    }
+}
