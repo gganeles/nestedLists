@@ -15,6 +15,9 @@
         ],
         "isolatedModules": true,
         "paths": {
+            "baseUrl": [
+                "."
+            ],
             "~/*": [
                 "./src/*"
             ],

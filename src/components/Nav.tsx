@@ -1,19 +1,97 @@
-import { useLocation } from "@solidjs/router";
+import { useLocation, A, useNavigate } from "@solidjs/router";
+import { useRtdbValue, db } from "@lib/db.client";
+import { For, Show, createSignal, createEffect, createMemo, Accessor } from "solid-js";
+import { List, uuid } from "~/lib/types";
+import { update, ref, remove, push, set } from "firebase/database";
+
+let lastTimeTyped = 0;
+
+function NavItem(props: { id: string, lists: Accessor<Record<string, List> | null> }) {
+    const list = createMemo(() => props.lists()?.[props.id]);
+
+    // Guard against list deletion
+    if (!list()) return null;
+
+    const location = useLocation();
+    const navigate = useNavigate();
+    const isActive = () => location.pathname === `/${props.id}`;
+
+    const [title, setTitle] = createSignal(list()!.title);
+
+    createEffect(() => {
+        const currentList = list();
+        if (currentList && Date.now() > lastTimeTyped && currentList.title !== title()) {
+            setTitle(currentList.title);
+        }
+    });
+
+    const handleInput = (e: InputEvent) => {
+        const newTitle = (e.currentTarget as HTMLInputElement).value;
+        setTitle(newTitle);
+        lastTimeTyped = Date.now() + 200;
+        update(ref(db, `lists/${props.id}`), { title: newTitle });
+    };
+
+    return (
+        <li class={`group relative flex items-center border-b-2 h-full ${isActive() ? "border-white" : "border-transparent hover:border-gray-300"} mx-0 pr-4 pl-0 whitespace-nowrap transition-colors duration-200`}>
+            {isActive() ? (
+                <div class="relative pl-4 py-3">
+                    <span class="invisible whitespace-pre font-medium text-lg py-3 border border-transparent">{title() || "Untitled"}</span>
+                    <input
+                        class="absolute inset-0 w-full h-full bg-transparent text-white font-medium text-lg focus:outline-none py-3 pl-4 border-none placeholder-white/70"
+                        value={title()}
+                        placeholder="Untitled"
+                        onInput={handleInput}
+                    />
+                </div>
+            ) : (
+                <A href={`/${props.id}`} class="block pl-4 py-3 text-gray-200 hover:text-white font-medium text-lg transition-colors">
+                    {title() || "Untitled"}
+                </A>
+            )}
+            <button
+                class="ml-2 text-gray-300 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
+                title="Delete List"
+                onClick={(e) => {
+                    e.preventDefault();
+                    remove(ref(db, `lists/${props.id}`));
+                    if (isActive()) {
+                        navigate("/");
+                    }
+                }}
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor">
+                    <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" />
+                </svg>
+            </button>
+        </li>
+    );
+}
 
 export default function Nav() {
-  const location = useLocation();
-  const active = (path: string) =>
-    path == location.pathname ? "border-sky-600" : "border-transparent hover:border-sky-600";
-  return (
-    <nav class="bg-sky-800">
-      <ul class="container flex items-center p-3 text-gray-200">
-        <li class={`border-b-2 ${active("/")} mx-1.5 sm:mx-6`}>
-          <a href="/">Home</a>
-        </li>
-        <li class={`border-b-2 ${active("/about")} mx-1.5 sm:mx-6`}>
-          <a href="/about">About</a>
-        </li>
-      </ul>
-    </nav>
-  );
+    const { value: lists } = useRtdbValue<Record<string, List>>("lists");
+
+    return (
+        <nav class="bg-sky-700 shadow-lg sticky top-0 z-50">
+            <ul class="container mx-auto flex items-center px-2 text-gray-200 overflow-x-auto scroller-none">
+                <Show when={lists()}>
+                    <For each={Object.keys(lists()!)}>
+                        {(listId) => <NavItem id={listId} lists={lists} />}
+                    </For>
+                </Show>
+                <button
+                    class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 transition-colors shadow-md font-medium flex items-center whitespace-nowrap ml-1 self-center h-min"
+                    onClick={() => {
+                        const newListRef = push(ref(db, "lists"));
+                        const newList = new List("New List");
+                        newList.id = newListRef.key! as uuid;
+                        set(newListRef, newList);
+                    }}
+                >
+                    <span class="text-xl leading-none">+</span>
+                    New List
+                </button>
+            </ul>
+        </nav>
+    );
 }

@@ -1,29 +1,30 @@
 {
-  "name": "example-with-tailwindcss",
-  "type": "module",
-  "scripts": {
-    "dev": "vinxi dev",
-    "build": "vinxi build",
-    "start": "vinxi start"
-  },
-  "dependencies": {
-    "@solidjs/router": "^0.15.0",
-    "@solidjs/start": "^1.1.0",
-    "firebase": "^12.7.0",
-    "solid-js": "^1.9.5",
-    "vinxi": "^0.5.7"
-  },
-  "devDependencies": {
-    "@tailwindcss/vite": "^4.0.7",
-    "tailwindcss": "^4.0.7"
-  },
-  "engines": {
-    "node": ">=22"
-  },
-  "trustedDependencies": [
-    "@firebase/util",
-    "@parcel/watcher",
-    "esbuild",
-    "protobufjs"
-  ]
+    "name": "example-with-tailwindcss",
+    "type": "module",
+    "scripts": {
+        "dev": "vinxi dev",
+        "build": "vinxi build",
+        "start": "vinxi start"
+    },
+    "dependencies": {
+        "@solidjs/router": "^0.15.0",
+        "@solidjs/start": "^1.1.0",
+        "firebase": "^12.7.0",
+        "solid-js": "^1.9.5",
+        "vinxi": "^0.5.7"
+    },
+    "devDependencies": {
+        "@tailwindcss/vite": "^4.0.7",
+        "tailwindcss": "^4.0.7",
+        "vite-tsconfig-paths": "^6.0.3"
+    },
+    "engines": {
+        "node": ">=22"
+    },
+    "trustedDependencies": [
+        "@firebase/util",
+        "@parcel/watcher",
+        "esbuild",
+        "protobufjs"
+    ]
 }
