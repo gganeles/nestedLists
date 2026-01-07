@@ -3,7 +3,7 @@ import { ListItem } from "~/lib/types";
 import { db } from "@lib/db.client";
 import { ref, set } from "firebase/database";
 
-export default function AddItemElement(props: { idstring: string, onBlur?: () => void }) {
+export default function AddItemElement(props: { idstring: string, onBlur?: () => void, parentList: ListItem[] }) {
     const [text, setText] = createSignal("");
     let inputRef: HTMLInputElement | undefined;
 
@@ -12,7 +12,20 @@ export default function AddItemElement(props: { idstring: string, onBlur?: () =>
     const addItem = async () => {
         if (!text()) return;
         const newItem = new ListItem(text());
-        await set(ref(db, `${props.idstring}/${newItem.id}`), newItem);
+
+        // Handle potential dictionary-to-array conversion or safety check
+        let list: ListItem[];
+        if (Array.isArray(props.parentList)) {
+            list = [...props.parentList];
+        } else if (props.parentList && typeof props.parentList === 'object') {
+            // Convert dictionary to array if necessary
+            list = Object.values(props.parentList);
+        } else {
+            list = [];
+        }
+
+        list.push(newItem);
+        await set(ref(db, `${props.idstring}`), list);
         setText("");
     };
 

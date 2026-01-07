@@ -1,14 +1,13 @@
 export type uuid = `${string}-${string}-${string}-${string}-${string}`;
 
-export interface Items {
-    [key: uuid]: ListItem;
-}
+export type Items = ListItem[];
+
 
 export class ListItem {
     id: uuid;
     text: string;
     completed: boolean;
-    children: Items = {};
+    children: Items = [];
     createdAt: number;
 
     constructor(
@@ -24,23 +23,29 @@ export class ListItem {
         return this.children;
     }
 
+    findChildIndex(id: uuid): number {
+        return this.getChildren().findIndex(child => child.id === id);
+    }
+
     addChild(text: string): ListItem {
         const children = this.getChildren();
         const newItem = new ListItem(text);
-        children[newItem.id] = newItem;
-        return children[newItem.id];
+        children.push(newItem);
+        return newItem;
     }
 
-    getSortedChildren(): ListItem[] {
+    addItemAt(index: number, text: string): ListItem {
         const children = this.getChildren();
-        return Object.values(children).sort((a, b) => a.createdAt - b.createdAt);
+        const newItem = new ListItem(text);
+        children.splice(index, 0, newItem);
+        return newItem;
     }
 }
 
 export class List {
     title: string;
     id: uuid
-    items: Items = {};
+    items: Items = [];
 
     constructor(
         title: string,
@@ -56,12 +61,31 @@ export class List {
     addItem(text: string): ListItem {
         const items = this.getItems();
         const newItem = new ListItem(text);
-        items[newItem.id] = newItem;
-        return items[newItem.id];
+        items.push(newItem);
+        return newItem;
     }
 
-    getSortedItems(): ListItem[] {
+    addItemAt(index: number, text: string): ListItem {
         const items = this.getItems();
-        return Object.values(items).sort((a, b) => a.createdAt - b.createdAt);
+        const newItem = new ListItem(text);
+        items.splice(index, 0, newItem);
+        return newItem;
+    }
+
+    findItemById(id: uuid): ListItem | null {
+        function recursiveSearch(items: Items): ListItem | null {
+            for (const item of items) {
+                if (item.id === id) {
+                    return item;
+                }
+                const foundInChildren = recursiveSearch(item.getChildren());
+                if (foundInChildren) {
+                    return foundInChildren;
+                }
+            }
+            return null;
+        }
+
+        return recursiveSearch(this.getItems());
     }
 }
