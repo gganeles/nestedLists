@@ -2,7 +2,7 @@ import { useLocation, A, useNavigate } from "@solidjs/router";
 import { useRtdbValue, db } from "@lib/db.client";
 import { For, Show, createSignal, createEffect, createMemo, Accessor } from "solid-js";
 import { List, uuid } from "~/lib/types";
-import { update, ref, remove, push, set } from "firebase/database";
+import { update, ref, push, set } from "firebase/database";
 
 let lastTimeTyped = 0;
 
@@ -49,21 +49,6 @@ function NavItem(props: { id: string, lists: Accessor<Record<string, List> | nul
                     {title() || "Untitled"}
                 </A>
             )}
-            <button
-                class="ml-2 text-gray-300 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
-                title="Delete List"
-                onClick={(e) => {
-                    e.preventDefault();
-                    remove(ref(db, `lists/${props.id}`));
-                    if (isActive()) {
-                        navigate("/");
-                    }
-                }}
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor">
-                    <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" />
-                </svg>
-            </button>
         </li>
     );
 }
